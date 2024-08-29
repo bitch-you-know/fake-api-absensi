@@ -1,0 +1,17 @@
+{
+    "users": [
+      {
+        "id": 1,
+        "email": "abiefathan22@gmail.com",
+        "password": "abiabi",
+        "log": []
+      },
+      {
+        "id": 2,
+        "email": "techie@email.com",
+        "password": "techie",
+        "log": []
+      }
+    ]
+  }
+  
