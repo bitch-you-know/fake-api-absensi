@@ -1,126 +1,39 @@
 {
-  "products": [
+  "attendance": [
     {
-      "id": 1,
-      "name": "Product001",
-      "cost": 10,
-      "quantity": 1000,
-      "locationId": 1,
-      "familyId": 1
+      "email": "nilson@email.com",
+      "loginTime": "2024-08-30 17:44:32.951",
+      "logoutTime": null
     },
     {
-      "id": 2,
-      "name": "Product002",
-      "cost": 20,
-      "quantity": 2000,
-      "locationId": 1,
-      "familyId": 2
+      "email": "nilson@email.com",
+      "loginTime": "2024-08-30 17:58:45.293",
+      "logoutTime": null
     },
     {
-      "id": 3,
-      "name": "Product003",
-      "cost": 30,
-      "quantity": 3000,
-      "locationId": 3,
-      "familyId": 2
+      "email": "nilson@email.com",
+      "loginTime": "2024-08-30 18:00:48.470",
+      "logoutTime": null
     },
     {
-      "id": 4,
-      "name": "Product004",
-      "cost": 40,
-      "quantity": 4000,
-      "locationId": 2,
-      "familyId": 3
+      "email": "abiefathan22@gmail.com",
+      "loginTime": "2024-08-30 18:49:42.956",
+      "logoutTime": null
     },
     {
-      "id": 5
+      "email": "admin@example.com",
+      "loginTime": "2024-08-30 19:48:03.778",
+      "logoutTime": null
     },
     {
-      "id": 6
+      "email": "abiefathan22@gmail.com",
+      "loginTime": "2024-08-30 19:53:55.740",
+      "logoutTime": null
     },
     {
-      "id": 7
-    },
-    {
-      "id": 8
-    },
-    {
-      "id": 9
-    },
-    {
-      "id": 10
-    },
-    {
-      "id": 11
-    },
-    {
-      "id": 12
-    },
-    {
-      "id": 13
-    },
-    {
-      "id": 14
-    },
-    {
-      "id": 15
-    },
-    {
-      "id": 16
-    },
-    {
-      "id": 17
-    },
-    {
-      "id": 18
-    }
-  ],
-  "locations": [
-    {
-      "id": 1,
-      "name": "Location001"
-    },
-    {
-      "id": 2,
-      "name": "Location002"
-    },
-    {
-      "id": 3,
-      "name": "Location003"
-    }
-  ],
-  "families": [
-    {
-      "id": 1,
-      "name": "FM001"
-    },
-    {
-      "id": 2,
-      "name": "FM002"
-    },
-    {
-      "id": 3,
-      "name": "FM003"
-    }
-  ],
-  "transactions": [
-    {
-      "id": 1,
-      "cost": 11,
-      "quantity": 10,
-      "productId": 1
-    },
-    {
-      "id": 2,
-      "cost": 12,
-      "quantity": 100,
-      "productId": 2
-    },
-    {
-      "id": 3,
-      "cost": 15,
-      "quantity": 101,
-      "productId": 3
+      "email": "abiefathan22@gmail.com",
+      "loginTime": "2024-08-30 21:02:28.187",
+      "logoutTime": null
     }
   ]
 }

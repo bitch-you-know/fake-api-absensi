@@ -1,6 +1,8 @@
 # JSONServer + JWT Auth
+HALLO BRO NAMA GW ABI
 
-A Fake REST API using json-server with JWT authentication. 
+
+A Fake REST API ABI using json-server with JWT authentication. 
 
 Implemented End-points: login,register
 
@@ -28,8 +30,8 @@ with the following data
 
 ```
 {
-  "email": "nilson@email.com",
-  "password":"nilson"
+  "email": "admin@example.com",
+  "password": "admin123",
 }
 ```
 

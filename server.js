@@ -4,11 +4,10 @@ const jsonServer = require('json-server');
 const jwt = require('jsonwebtoken');
 
 const server = jsonServer.create();
-const router = jsonServer.router('./database.json');
-const userdb = JSON.parse(fs.readFileSync('./users.json', 'UTF-8'));
-const loginLogoutFile = './login-logout.json';
+const router = jsonServer.router('./database.json'); // Data untuk endpoint utama
+const userdbPath = './users.json'; // Data untuk endpoint /users
+const databasePath = './database.json';
 
-// Middleware setup
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 server.use(jsonServer.defaults());
@@ -16,69 +15,64 @@ server.use(jsonServer.defaults());
 const SECRET_KEY = '123456789';
 const expiresIn = '1h';
 
-// Create a token from a payload
+// Create a token from a payload 
 function createToken(payload) {
   return jwt.sign(payload, SECRET_KEY, { expiresIn });
 }
 
-// Verify the token
+// Verify the token 
 function verifyToken(token) {
   return jwt.verify(token, SECRET_KEY, (err, decode) => decode !== undefined ? decode : err);
 }
 
 // Check if the user exists in database
 function isAuthenticated({ email, password }) {
-  return userdb.users.findIndex(user => user.email === email && user.password === password) !== -1;
+  const data = JSON.parse(fs.readFileSync(userdbPath, 'UTF-8'));
+  return data.users.findIndex(user => user.email === email && user.password === password) !== -1;
 }
 
-// Log login/logout activity
-function logActivity(email, action) {
-  const now = new Date();
-  const timestampUTC = now.toISOString(); // Waktu dalam format UTC
-  
-  // Konversi waktu UTC ke WIB (UTC+7)
-  const timestampWIB = new Date(now.getTime() + 7 * 60 * 60 * 1000).toISOString(); // Format: YYYY-MM-DDTHH:MM:SS.sssZ
+// Convert UTC time to WIB
+function convertToWIB(date) {
+  const utcDate = new Date(date);
+  const WIB_OFFSET = 7 * 60 * 60 * 1000; // WIB is UTC+7
+  const wibDate = new Date(utcDate.getTime() + WIB_OFFSET);
+  return wibDate.toISOString().replace('T', ' ').slice(0, -1); // Format to "YYYY-MM-DD HH:MM:SS"
+}
 
-  fs.readFile(loginLogoutFile, (err, data) => {
-    if (err && err.code === 'ENOENT') {
-      // File does not exist, initialize with empty array
-      fs.writeFile(loginLogoutFile, JSON.stringify([]), err => {
-        if (err) {
-          console.error('Error initializing login-logout file:', err);
-        } else {
-          console.log('Initialized login-logout file');
-        }
-      });
-    } else if (err) {
-      console.error('Error reading login-logout file:', err);
-      return;
-    }
-    
-    let logs;
-    try {
-      logs = JSON.parse(data.toString());
-    } catch (e) {
-      console.error('Error parsing login-logout file:', e);
-      logs = [];
-    }
-    
-    logs.push({ email, action, timestamp: timestampWIB });
-    
-    fs.writeFile(loginLogoutFile, JSON.stringify(logs, null, 2), err => {
-      if (err) {
-        console.error('Error writing login-logout file:', err);
-      } else {
-        console.log('Successfully logged activity:', { email, action, timestamp: timestampWIB });
-      }
-    });
-  });
+// Save login activity
+function saveLoginActivity(email) {
+  const loginTime = convertToWIB(new Date().toISOString());
+  const database = JSON.parse(fs.readFileSync(databasePath, 'UTF-8'));
+
+  database.attendance = database.attendance || [];
+  const attendanceEntry = {
+    email: email,
+    loginTime: loginTime,
+    logoutTime: null // Will be updated on logout
+  };
+
+  database.attendance.push(attendanceEntry);
+  fs.writeFileSync(databasePath, JSON.stringify(database, null, 2));
+}
+
+// Update logout activity
+function updateLogoutActivity(email) {
+  const logoutTime = convertToWIB(new Date().toISOString());
+  const database = JSON.parse(fs.readFileSync(databasePath, 'UTF-8'));
+
+  const attendanceEntry = database.attendance.find(record => record.email === email && record.logoutTime === null);
+  if (attendanceEntry) {
+    attendanceEntry.logoutTime = logoutTime;
+    fs.writeFileSync(databasePath, JSON.stringify(database, null, 2));
+  }
 }
 
 // Register New User
 server.post('/auth/register', (req, res) => {
   console.log("register endpoint called; request body:");
   console.log(req.body);
-  const { email, password } = req.body;
+
+  const { email, password, divisi, nama, alamat } = req.body;
 
   if (isAuthenticated({ email, password })) {
     const status = 401;
@@ -87,7 +81,7 @@ server.post('/auth/register', (req, res) => {
     return;
   }
 
-  fs.readFile("./users.json", (err, data) => {
+  fs.readFile(userdbPath, (err, data) => {
     if (err) {
       const status = 401;
       const message = err;
@@ -95,11 +89,23 @@ server.post('/auth/register', (req, res) => {
       return;
     }
 
-    let dataJson = JSON.parse(data.toString());
-    let lastItemId = dataJson.users[dataJson.users.length - 1].id;
-    dataJson.users.push({ id: lastItemId + 1, email: email, password: password });
+    // Get current users data
+    var data = JSON.parse(data.toString());
 
-    fs.writeFile("./users.json", JSON.stringify(dataJson), err => {
+    // Get the id of last user
+    var last_item_id = data.users[data.users.length - 1].id;
+
+    // Add new user with additional fields
+    data.users.push({ 
+      id: last_item_id + 1, 
+      email: email, 
+      password: password,
+      divisi: divisi,
+      nama: nama,
+      alamat: alamat
+    });
+
+    fs.writeFile(userdbPath, JSON.stringify(data), (err) => {  // WRITE
       if (err) {
         const status = 401;
         const message = err;
@@ -109,6 +115,7 @@ server.post('/auth/register', (req, res) => {
     });
   });
 
+  // Create token for new user
   const access_token = createToken({ email, password });
   console.log("Access Token:" + access_token);
   res.status(200).json({ access_token });
@@ -118,8 +125,8 @@ server.post('/auth/register', (req, res) => {
 server.post('/auth/login', (req, res) => {
   console.log("login endpoint called; request body:");
   console.log(req.body);
+
   const { email, password } = req.body;
-  
   if (!isAuthenticated({ email, password })) {
     const status = 401;
     const message = 'Incorrect email or password';
@@ -127,25 +134,27 @@ server.post('/auth/login', (req, res) => {
     return;
   }
 
-  // Log the login activity
-  logActivity(email, 'login');
-
   const access_token = createToken({ email, password });
   console.log("Access Token:" + access_token);
+
+  // Save login activity
+  saveLoginActivity(email);
+
   res.status(200).json({ access_token });
 });
 
-// Middleware to check authorization
-server.use(/^(?!\/auth).*$/, (req, res, next) => {
+// Logout endpoint
+server.post('/auth/logout', (req, res) => {
   if (req.headers.authorization === undefined || req.headers.authorization.split(' ')[0] !== 'Bearer') {
     const status = 401;
     const message = 'Error in authorization format';
     res.status(status).json({ status, message });
     return;
   }
-  
+
   try {
-    let verifyTokenResult = verifyToken(req.headers.authorization.split(' ')[1]);
+    const token = req.headers.authorization.split(' ')[1];
+    const verifyTokenResult = verifyToken(token);
 
     if (verifyTokenResult instanceof Error) {
       const status = 401;
@@ -153,10 +162,37 @@ server.use(/^(?!\/auth).*$/, (req, res, next) => {
       res.status(status).json({ status, message });
       return;
     }
-    
-    // Log the logout activity
-    logActivity(verifyTokenResult.email, 'logout');
 
+    // Update logout activity
+    updateLogoutActivity(verifyTokenResult.email);
+
+    res.status(200).json({ message: 'Logout successful' });
+  } catch (err) {
+    const status = 401;
+    const message = 'Error access_token is revoked';
+    res.status(status).json({ status, message });
+  }
+});
+
+// Middleware to check if user is authenticated before accessing other routes
+server.use(/^(?!\/auth).*$/, (req, res, next) => {
+  if (req.headers.authorization === undefined || req.headers.authorization.split(' ')[0] !== 'Bearer') {
+    const status = 401;
+    const message = 'Error in authorization format';
+    res.status(status).json({ status, message });
+    return;
+  }
+
+  try {
+    let verifyTokenResult;
+    verifyTokenResult = verifyToken(req.headers.authorization.split(' ')[1]);
+
+    if (verifyTokenResult instanceof Error) {
+      const status = 401;
+      const message = 'Access token not provided';
+      res.status(status).json({ status, message });
+      return;
+    }
     next();
   } catch (err) {
     const status = 401;
@@ -165,29 +201,62 @@ server.use(/^(?!\/auth).*$/, (req, res, next) => {
   }
 });
 
-server.use(router);
-
-// Endpoint to get login/logout activity
-server.get('/activity', (req, res) => {
-  fs.readFile(loginLogoutFile, (err, data) => {
-    if (err) {
-      const status = 500;
-      const message = 'Error reading login-logout file';
-      res.status(status).json({ status, message });
-      return;
-    }
-
-    try {
-      const logs = JSON.parse(data.toString());
-      res.status(200).json(logs);
-    } catch (e) {
-      const status = 500;
-      const message = 'Error parsing login-logout file';
-      res.status(status).json({ status, message });
-    }
-  });
+// Get all users
+server.get('/users', (req, res) => {
+  const data = JSON.parse(fs.readFileSync(userdbPath, 'UTF-8'));
+  res.json(data);
 });
 
+// Get a user by ID
+server.get('/users/:id', (req, res) => {
+  const data = JSON.parse(fs.readFileSync(userdbPath, 'UTF-8'));
+  const user = data.users.find(u => u.id === parseInt(req.params.id));
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).json({ status: 404, message: 'User not found' });
+  }
+});
+
+// Update a user by ID
+server.put('/users/:id', (req, res) => {
+  const { email, password, divisi, nama, alamat } = req.body;
+  const data = JSON.parse(fs.readFileSync(userdbPath, 'UTF-8'));
+  const userIndex = data.users.findIndex(u => u.id === parseInt(req.params.id));
+
+  if (userIndex !== -1) {
+    data.users[userIndex] = {
+      id: parseInt(req.params.id),
+      email,
+      password,
+      divisi,
+      nama,
+      alamat
+    };
+
+    fs.writeFileSync(userdbPath, JSON.stringify(data, null, 2));
+    res.json(data.users[userIndex]);
+  } else {
+    res.status(404).json({ status: 404, message: 'User not found' });
+  }
+});
+
+// Delete a user by ID
+server.delete('/users/:id', (req, res) => {
+  const data = JSON.parse(fs.readFileSync(userdbPath, 'UTF-8'));
+  const userIndex = data.users.findIndex(u => u.id === parseInt(req.params.id));
+
+  if (userIndex !== -1) {
+    data.users.splice(userIndex, 1);
+    fs.writeFileSync(userdbPath, JSON.stringify(data, null, 2));
+    res.status(204).end();
+  } else {
+    res.status(404).json({ status: 404, message: 'User not found' });
+  }
+});
+
+server.use(router);
+
 server.listen(8000, () => {
-  console.log('Run Auth API Server http://localhost:8000');
+  console.log('Run Auth API Server');
 });
