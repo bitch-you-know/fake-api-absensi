@@ -1,20 +1,48 @@
 {
-  "users": [
-    {
-      "id": 1,
-      "email": "abiefathan22@gmail.com",
-      "password": "abiabi",
-      "divisi": "admin",
-      "nama": "abi fathan yusuf",
-      "alamat": "Jl. Admin No. 1, Jakarta"
-    },
-    {
-      "id": 2,
-      "email": "staf@example.com",
-      "password": "staf123",
-      "divisi": "staf produksi",
-      "nama": "andi soraya",
-      "alamat": "Jl. Staf No. 2, Jakarta"
-    }
-  ]
+    "users": [
+        {
+            "id": 1,
+            "email": "abiefathan22@gmail.com",
+            "password": "abiabi",
+            "divisi": "admin",
+            "nama": "abi fathan yusuf",
+            "alamat": "Jl. Admin No. 1, Jakarta"
+        },
+        {
+            "id": 2,
+            "email": "staf@example.com",
+            "password": "staf123",
+            "divisi": "staf produksi",
+            "nama": "andi soraya",
+            "alamat": "Jl. Staf No. 2, Jakarta"
+        },
+        {
+            "id": 3,
+            "email": "hanny@gmail.com",
+            "password": "hanny",
+            "divisi": "admin",
+            "nama": "hanny",
+            "alamat": "Jl. Admin No. 1, Jakarta",
+            "role": "admin"
+        },
+        {
+            "id": 4,
+            "email": "jamal@gmail.com",
+            "password": "jamal",
+            "divisi": "produksi",
+            "nama": "jamal",
+            "alamat": "jembatan pari",
+            "role": ""
+        },
+        {
+            "id": 5,
+            "email": "jamalkkkkkkk@gmail.com",
+            "password": "jamal",
+            "divisi": "produksi",
+            "nama": "jamal",
+            "alamat": "jembatan pari",
+            "role": "produksi"
+            
+        }
+    ]
 }

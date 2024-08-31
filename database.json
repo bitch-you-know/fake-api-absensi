@@ -1,38 +1,23 @@
 {
   "attendance": [
     {
-      "email": "nilson@email.com",
-      "loginTime": "2024-08-30 17:44:32.951",
-      "logoutTime": null
-    },
-    {
-      "email": "nilson@email.com",
-      "loginTime": "2024-08-30 17:58:45.293",
-      "logoutTime": null
-    },
-    {
-      "email": "nilson@email.com",
-      "loginTime": "2024-08-30 18:00:48.470",
+      "email": "abiefathan22@gmail.com",
+      "loginTime": "2024-08-31 15:20:07.987",
       "logoutTime": null
     },
     {
       "email": "abiefathan22@gmail.com",
-      "loginTime": "2024-08-30 18:49:42.956",
+      "loginTime": "2024-08-31 18:10:19.076",
       "logoutTime": null
     },
     {
-      "email": "admin@example.com",
-      "loginTime": "2024-08-30 19:48:03.778",
-      "logoutTime": null
-    },
-    {
-      "email": "abiefathan22@gmail.com",
-      "loginTime": "2024-08-30 19:53:55.740",
+      "email": "jamal@gmail.com",
+      "loginTime": "2024-08-31 18:11:34.981",
       "logoutTime": null
     },
     {
       "email": "abiefathan22@gmail.com",
-      "loginTime": "2024-08-30 21:02:28.187",
+      "loginTime": "2024-08-31 18:42:16.481",
       "logoutTime": null
     }
   ]

@@ -67,12 +67,30 @@ function updateLogoutActivity(email) {
   }
 }
 
+// Login endpoint
+server.post('/auth/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!isAuthenticated({ email, password })) {
+    const status = 401;
+    const message = 'Incorrect email or password';
+    res.status(status).json({ status, message });
+    return;
+  }
+
+  // Create token
+  const access_token = createToken({ email, password });
+  saveLoginActivity(email); // Record login activity
+
+  res.status(200).json({ access_token });
+});
+
 // Register New User
 server.post('/auth/register', (req, res) => {
   console.log("register endpoint called; request body:");
   console.log(req.body);
 
-  const { email, password, divisi, nama, alamat } = req.body;
+  const { email, password, divisi, nama, alamat, role } = req.body;
 
   if (isAuthenticated({ email, password })) {
     const status = 401;
@@ -83,8 +101,8 @@ server.post('/auth/register', (req, res) => {
 
   fs.readFile(userdbPath, (err, data) => {
     if (err) {
-      const status = 401;
-      const message = err;
+      const status = 500; // Internal server error
+      const message = err.message;
       res.status(status).json({ status, message });
       return;
     }
@@ -93,54 +111,33 @@ server.post('/auth/register', (req, res) => {
     var data = JSON.parse(data.toString());
 
     // Get the id of last user
-    var last_item_id = data.users[data.users.length - 1].id;
+    var last_item_id = data.users[data.users.length - 1]?.id || 0;
 
-    // Add new user with additional fields
+    // Add new user with additional fields including role
     data.users.push({ 
       id: last_item_id + 1, 
       email: email, 
       password: password,
       divisi: divisi,
       nama: nama,
-      alamat: alamat
+      alamat: alamat,
+      role: role // Adding role here
     });
 
     fs.writeFile(userdbPath, JSON.stringify(data), (err) => {  // WRITE
       if (err) {
-        const status = 401;
-        const message = err;
+        const status = 500; // Internal server error
+        const message = err.message;
         res.status(status).json({ status, message });
         return;
       }
+
+      // Create token for new user
+      const access_token = createToken({ email, password, role });
+      console.log("Access Token:" + access_token);
+      res.status(200).json({ access_token });
     });
   });
-
-  // Create token for new user
-  const access_token = createToken({ email, password });
-  console.log("Access Token:" + access_token);
-  res.status(200).json({ access_token });
-});
-
-// Login to one of the users from ./users.json
-server.post('/auth/login', (req, res) => {
-  console.log("login endpoint called; request body:");
-  console.log(req.body);
-
-  const { email, password } = req.body;
-  if (!isAuthenticated({ email, password })) {
-    const status = 401;
-    const message = 'Incorrect email or password';
-    res.status(status).json({ status, message });
-    return;
-  }
-
-  const access_token = createToken({ email, password });
-  console.log("Access Token:" + access_token);
-
-  // Save login activity
-  saveLoginActivity(email);
-
-  res.status(200).json({ access_token });
 });
 
 // Logout endpoint
